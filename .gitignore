@@ -1,0 +1,59 @@
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# Auto-generated files
+Generated_Code/
+
+# NuGet
+*.nupkg
+# The packages folder can be ignored because of PackageReference
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# Azure Pipelines
+.azure-pipelines/
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+
+# dotCover
+*.dotCover
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# Visual Studio
+*.vs/
+
+# User secrets
+secrets.json
+
+# Test results
+TestResults/
+
+# EF Migrations snapshots
+Migrations/
+
+# npm
+node_modules/
