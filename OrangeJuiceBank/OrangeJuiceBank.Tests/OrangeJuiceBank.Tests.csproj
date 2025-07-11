@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OrangeJuiceBank.API\OrangeJuiceBank.API.csproj" />
     <ProjectReference Include="..\OrangeJuiceBank.Domain\OrangeJuiceBank.Domain.csproj" />
     <ProjectReference Include="..\OrangeJuiceBank.Infrastructure\OrangeJuiceBank.Infrastructure.csproj" />
   </ItemGroup>
