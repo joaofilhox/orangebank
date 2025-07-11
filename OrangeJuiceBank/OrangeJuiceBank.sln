@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrangeJuiceBank.Infrastruct
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrangeJuiceBank.API", "OrangeJuiceBank.API\OrangeJuiceBank.API.csproj", "{5FEAB753-780F-4177-ACAB-DC3084FE3208}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrangeJuiceBank.Tests", "OrangeJuiceBank.Tests\OrangeJuiceBank.Tests.csproj", "{B1C0E9E5-B0D1-4D08-B349-C9B34B66390C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{5FEAB753-780F-4177-ACAB-DC3084FE3208}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FEAB753-780F-4177-ACAB-DC3084FE3208}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FEAB753-780F-4177-ACAB-DC3084FE3208}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1C0E9E5-B0D1-4D08-B349-C9B34B66390C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1C0E9E5-B0D1-4D08-B349-C9B34B66390C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1C0E9E5-B0D1-4D08-B349-C9B34B66390C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1C0E9E5-B0D1-4D08-B349-C9B34B66390C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
