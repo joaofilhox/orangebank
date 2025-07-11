@@ -1,0 +1,6 @@
+@OrangeJuiceBank.API_HostAddress = http://localhost:5020
+
+GET {{OrangeJuiceBank.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
