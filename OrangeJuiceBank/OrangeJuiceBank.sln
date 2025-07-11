@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
+VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrangeJuiceBank.Domain", "OrangeJuiceBank.Domain\OrangeJuiceBank.Domain.csproj", "{BADCA7CB-341B-4EFD-B207-AE73A97EA63B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrangeJuiceBank.Infrastructure", "OrangeJuiceBank.Infrastructure\OrangeJuiceBank.Infrastructure.csproj", "{002073CA-1010-4E39-BA63-AC2DF3A2B2E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrangeJuiceBank.API", "OrangeJuiceBank.API\OrangeJuiceBank.API.csproj", "{5FEAB753-780F-4177-ACAB-DC3084FE3208}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{BADCA7CB-341B-4EFD-B207-AE73A97EA63B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BADCA7CB-341B-4EFD-B207-AE73A97EA63B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BADCA7CB-341B-4EFD-B207-AE73A97EA63B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{002073CA-1010-4E39-BA63-AC2DF3A2B2E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{002073CA-1010-4E39-BA63-AC2DF3A2B2E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{002073CA-1010-4E39-BA63-AC2DF3A2B2E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{002073CA-1010-4E39-BA63-AC2DF3A2B2E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FEAB753-780F-4177-ACAB-DC3084FE3208}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FEAB753-780F-4177-ACAB-DC3084FE3208}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FEAB753-780F-4177-ACAB-DC3084FE3208}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FEAB753-780F-4177-ACAB-DC3084FE3208}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
