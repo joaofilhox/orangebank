@@ -31,6 +31,47 @@ namespace OrangeJuiceBank.Tests
         }
 
         [Fact]
+        public async Task GetBalance_ShouldReturnBalance_WhenAccountExists()
+        {
+            // Arrange
+            var accountId = Guid.NewGuid();
+            var account = new Account
+            {
+                Id = accountId,
+                Balance = 150.75m
+            };
+
+            _accountServiceMock.Setup(s => s.GetAccountByIdAsync(accountId))
+                .ReturnsAsync(account);
+
+            // Act
+            var result = await _controller.GetBalance(accountId) as OkObjectResult;
+
+            // Assert
+            Assert.NotNull(result);
+
+            var response = Assert.IsType<BalanceResponse>(result.Value);
+            Assert.Equal(accountId, response.AccountId);
+            Assert.Equal(150.75m, response.Balance);
+        }
+
+        [Fact]
+        public async Task GetBalance_ShouldReturnNotFound_WhenAccountDoesNotExist()
+        {
+            // Arrange
+            var accountId = Guid.NewGuid();
+
+            _accountServiceMock.Setup(s => s.GetAccountByIdAsync(accountId))
+                .ReturnsAsync((Account)null);
+
+            // Act
+            var result = await _controller.GetBalance(accountId);
+
+            // Assert
+            Assert.IsType<NotFoundObjectResult>(result);
+        }
+
+        [Fact]
         public async Task GetStatement_ShouldReturnTransactions()
         {
             // Arrange
