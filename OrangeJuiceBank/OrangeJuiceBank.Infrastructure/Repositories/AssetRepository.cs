@@ -17,5 +17,10 @@ namespace OrangeJuiceBank.Infrastructure.Repositories
         {
             return await _context.Assets.FirstOrDefaultAsync(a => a.Id == id);
         }
+        public async Task<IEnumerable<Asset>> GetAllAsync()
+        {
+            return await _context.Assets.ToListAsync();
+        }
+
     }
 }

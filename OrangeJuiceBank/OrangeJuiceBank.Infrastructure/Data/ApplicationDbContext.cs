@@ -65,6 +65,7 @@ namespace OrangeJuiceBank.Infrastructure.Data
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.Amount)
                 .HasPrecision(18, 2);
+
             modelBuilder.Entity<Asset>().HasData(
                 new Asset
                 {
