@@ -34,10 +34,10 @@ namespace OrangeJuiceBank.Infrastructure.Repositories
         public async Task<IEnumerable<Account>> GetByUserIdAsync(Guid userId)
         {
             return await _context.Accounts
+                .Include(a => a.Investments)
+                    .ThenInclude(i => i.Asset)
                 .Where(a => a.UserId == userId)
                 .ToListAsync();
         }
-
-
     }
 }
