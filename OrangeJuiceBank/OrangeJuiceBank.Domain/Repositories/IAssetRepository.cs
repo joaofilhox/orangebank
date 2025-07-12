@@ -6,5 +6,7 @@ namespace OrangeJuiceBank.Domain.Repositories
     public interface IAssetRepository
     {
         Task<Asset> GetByIdAsync(Guid id);
+        Task<IEnumerable<Asset>> GetAllAsync();
+
     }
 }
