@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using OrangeJuiceBank.Domain;
@@ -81,40 +83,187 @@ namespace OrangeJuiceBank.Tests
         }
 
         [Fact]
-        public async Task TransferAsync_ShouldTransferAmountBetweenAccounts()
+        public async Task TransferAsync_ShouldTransferWithoutFee_WhenInternal()
         {
             // Arrange
-            var sourceAccountId = Guid.NewGuid();
-            var destinationAccountId = Guid.NewGuid();
-
-            var sourceAccount = new Account
+            var userId = Guid.NewGuid();
+            var source = new Account
             {
-                Id = sourceAccountId,
-                Balance = 200
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Type = AccountType.Corrente,
+                Balance = 500m
             };
 
-            var destinationAccount = new Account
+            var destination = new Account
             {
-                Id = destinationAccountId,
-                Balance = 100
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Type = AccountType.Investimento,
+                Balance = 0m
             };
 
-            _accountRepoMock.Setup(r => r.GetByIdAsync(sourceAccountId))
-                .ReturnsAsync(sourceAccount);
-
-            _accountRepoMock.Setup(r => r.GetByIdAsync(destinationAccountId))
-                .ReturnsAsync(destinationAccount);
+            _accountRepoMock.Setup(r => r.GetByIdAsync(source.Id))
+                .ReturnsAsync(source);
+            _accountRepoMock.Setup(r => r.GetByIdAsync(destination.Id))
+                .ReturnsAsync(destination);
 
             // Act
-            await _service.TransferAsync(sourceAccountId, destinationAccountId, 50);
+            await _service.TransferAsync(source.Id, destination.Id, 200m);
 
             // Assert
-            Assert.Equal(150, sourceAccount.Balance);
-            Assert.Equal(150, destinationAccount.Balance);
+            Assert.Equal(300m, source.Balance);
+            Assert.Equal(200m, destination.Balance);
 
-            _transactionRepoMock.Verify(t => t.AddAsync(It.IsAny<Transaction>()), Times.Once);
-            _accountRepoMock.Verify(r => r.UpdateAsync(sourceAccount), Times.Once);
-            _accountRepoMock.Verify(r => r.UpdateAsync(destinationAccount), Times.Once);
+            _transactionRepoMock.Verify(t => t.AddAsync(It.Is<Transaction>(x =>
+                x.Type == TransactionType.TransferenciaInterna &&
+                x.Amount == 200m
+            )), Times.Once);
+        }
+
+        [Fact]
+        public async Task TransferAsync_ShouldApplyFee_WhenExternal()
+        {
+            // Arrange
+            var source = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Corrente,
+                Balance = 1000m
+            };
+
+            var destination = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Corrente,
+                Balance = 0m
+            };
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(source.Id))
+                .ReturnsAsync(source);
+            _accountRepoMock.Setup(r => r.GetByIdAsync(destination.Id))
+                .ReturnsAsync(destination);
+
+            // Act
+            await _service.TransferAsync(source.Id, destination.Id, 200m);
+
+            // Assert
+            Assert.Equal(799m, source.Balance); // 200 + 1 taxa
+            Assert.Equal(200m, destination.Balance);
+
+            _transactionRepoMock.Verify(t => t.AddAsync(It.Is<Transaction>(x =>
+                x.Type == TransactionType.TransferenciaExterna &&
+                x.Amount == 200m
+            )), Times.Once);
+        }
+
+        [Fact]
+        public async Task TransferAsync_ShouldThrow_WhenBalanceInsufficient()
+        {
+            // Arrange
+            var source = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Corrente,
+                Balance = 50m
+            };
+
+            var destination = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = source.UserId,
+                Type = AccountType.Corrente,
+                Balance = 0m
+            };
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(source.Id))
+                .ReturnsAsync(source);
+            _accountRepoMock.Setup(r => r.GetByIdAsync(destination.Id))
+                .ReturnsAsync(destination);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.TransferAsync(source.Id, destination.Id, 100m));
+        }
+
+        [Fact]
+        public async Task TransferAsync_ShouldThrow_WhenInvestmentAccountHasInvestments()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            var source = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Type = AccountType.Investimento,
+                Balance = 500m,
+                Investments = new List<Investment>
+                {
+                    new Investment { Id = Guid.NewGuid(), Quantity = 1 }
+                }
+            };
+
+            var destination = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Type = AccountType.Corrente,
+                Balance = 0m
+            };
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(source.Id))
+                .ReturnsAsync(source);
+            _accountRepoMock.Setup(r => r.GetByIdAsync(destination.Id))
+                .ReturnsAsync(destination);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.TransferAsync(source.Id, destination.Id, 100m));
+        }
+
+        [Fact]
+        public async Task TransferAsync_ShouldThrow_WhenExternalTransferNotCorrente()
+        {
+            // Arrange
+            var source = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Investimento,
+                Balance = 1000m
+            };
+
+            var destination = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Corrente,
+                Balance = 0m
+            };
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(source.Id))
+                .ReturnsAsync(source);
+            _accountRepoMock.Setup(r => r.GetByIdAsync(destination.Id))
+                .ReturnsAsync(destination);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.TransferAsync(source.Id, destination.Id, 100m));
+        }
+
+        [Fact]
+        public async Task TransferAsync_ShouldThrow_WhenSameAccount()
+        {
+            // Arrange
+            var accountId = Guid.NewGuid();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.TransferAsync(accountId, accountId, 100m));
         }
     }
 }
