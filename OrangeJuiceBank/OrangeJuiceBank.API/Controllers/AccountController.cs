@@ -22,6 +22,29 @@ namespace OrangeJuiceBank.API.Controllers
             _transactionRepository = transactionRepository;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
+        {
+            var userId = GetUserId();
+
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Type = request.Type,
+                Balance = 0
+            };
+
+            await _accountService.CreateAccountAsync(account);
+
+            return CreatedAtAction(nameof(GetBalance), new { id = account.Id }, new
+            {
+                account.Id,
+                account.Type,
+                account.Balance
+            });
+        }
+
         [HttpPost("{id}/deposit")]
         public async Task<IActionResult> Deposit(Guid id, [FromBody] decimal amount)
         {

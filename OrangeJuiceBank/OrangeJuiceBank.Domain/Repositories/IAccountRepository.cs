@@ -5,5 +5,7 @@ namespace OrangeJuiceBank.Domain.Repositories
     {
         Task<Account> GetByIdAsync(Guid id);
         Task UpdateAsync(Account account);
+        Task AddAsync(Account account);
+
     }
 }

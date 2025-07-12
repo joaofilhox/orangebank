@@ -110,6 +110,13 @@ namespace OrangeJuiceBank.Infrastructure.Services
             var account = await _accountRepository.GetByIdAsync(accountId);
             return account;
         }
+        public async Task CreateAccountAsync(Account account)
+        {
+            if (account == null)
+                throw new ArgumentNullException(nameof(account));
+
+            await _accountRepository.AddAsync(account);
+        }
 
     }
 }
