@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrangeJuiceBank.API.Models;
+using OrangeJuiceBank.Domain.Repositories;
 using OrangeJuiceBank.Domain.Services;
 
 namespace OrangeJuiceBank.API.Controllers
@@ -11,9 +13,44 @@ namespace OrangeJuiceBank.API.Controllers
     {
         private readonly IInvestmentService _investmentService;
 
-        public InvestmentController(IInvestmentService investmentService)
+        private readonly IAccountRepository _accountRepository;
+
+        public InvestmentController(
+            IInvestmentService investmentService,
+            IAccountRepository accountRepository)
         {
             _investmentService = investmentService;
+            _accountRepository = accountRepository;
+        }
+
+        [HttpGet("portfolio")]
+        public async Task<IActionResult> GetPortfolio()
+        {
+            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
+            var accounts = await _accountRepository.GetByUserIdAsync(userId);
+            var investmentAccounts = accounts.Where(a => a.Type == AccountType.Investimento).ToList();
+
+            var portfolio = new List<InvestmentPortfolioResponse>();
+
+            foreach (var account in investmentAccounts)
+            {
+                foreach (var investment in account.Investments)
+                {
+                    portfolio.Add(new InvestmentPortfolioResponse
+                    {
+                        InvestmentId = investment.Id,
+                        AccountId = investment.AccountId,
+                        AssetName = investment.Asset.Name,
+                        AssetType = investment.Asset.Type.ToString(),
+                        Quantity = investment.Quantity,
+                        AveragePrice = investment.AveragePrice,
+                        CurrentPrice = investment.Asset.CurrentPrice
+                    });
+                }
+            }
+
+            return Ok(portfolio);
         }
 
         [HttpPost("buy")]

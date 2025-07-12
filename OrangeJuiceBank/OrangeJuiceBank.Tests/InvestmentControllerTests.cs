@@ -1,22 +1,29 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
-using Xunit;
 using OrangeJuiceBank.API.Controllers;
+using OrangeJuiceBank.Domain.Repositories;
 using OrangeJuiceBank.Domain.Services;
+using System;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace OrangeJuiceBank.Tests
 {
     public class InvestmentControllerTests
     {
         private readonly Mock<IInvestmentService> _investmentServiceMock;
+        private readonly Mock<IAccountRepository> _accountRepositoryMock;
         private readonly InvestmentController _controller;
 
         public InvestmentControllerTests()
         {
             _investmentServiceMock = new Mock<IInvestmentService>();
-            _controller = new InvestmentController(_investmentServiceMock.Object);
+            _accountRepositoryMock = new Mock<IAccountRepository>();
+            _controller = new InvestmentController(
+                         _investmentServiceMock.Object,
+                         _accountRepositoryMock.Object
+            );
+
 
             // Mock do usuário autenticado
             var userId = Guid.NewGuid();
