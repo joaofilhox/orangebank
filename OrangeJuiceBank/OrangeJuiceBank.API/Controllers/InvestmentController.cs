@@ -25,6 +25,24 @@ namespace OrangeJuiceBank.API.Controllers
 
             return Ok("Compra realizada com sucesso.");
         }
+
+        [HttpPost("sell")]
+        public async Task<IActionResult> SellAsset([FromBody] SellAssetRequest request)
+        {
+            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
+
+            await _investmentService.SellAssetAsync(userId, request.AccountId, request.AssetId, request.Quantity);
+
+            return Ok("Venda realizada com sucesso.");
+        }
+
+        public class SellAssetRequest
+        {
+            public Guid AccountId { get; set; }
+            public Guid AssetId { get; set; }
+            public decimal Quantity { get; set; }
+        }
+
     }
 
     public class BuyAssetRequest

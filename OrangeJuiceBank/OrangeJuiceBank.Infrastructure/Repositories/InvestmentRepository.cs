@@ -17,5 +17,10 @@ namespace OrangeJuiceBank.Infrastructure.Repositories
             await _context.Investments.AddAsync(investment);
             await _context.SaveChangesAsync();
         }
+        public async Task RemoveAsync(Investment investment)
+        {
+            _context.Investments.Remove(investment);
+            await _context.SaveChangesAsync();
+        }
     }
 }
