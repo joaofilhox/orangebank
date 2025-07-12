@@ -6,7 +6,6 @@ using OrangeJuiceBank.API.Models;
 using OrangeJuiceBank.Domain.Repositories;
 using OrangeJuiceBank.Domain.Services;
 
-
 namespace OrangeJuiceBank.Tests
 {
     public class AccountControllerTests
@@ -65,7 +64,6 @@ namespace OrangeJuiceBank.Tests
 
             // Assert
             Assert.NotNull(result);
-
             var response = Assert.IsType<BalanceResponse>(result.Value);
             Assert.Equal(accountId, response.AccountId);
             Assert.Equal(150.75m, response.Balance);
@@ -79,7 +77,7 @@ namespace OrangeJuiceBank.Tests
             var accountId = Guid.NewGuid();
 
             _accountServiceMock.Setup(s => s.GetAccountByIdAsync(accountId))
-                .ReturnsAsync((Account)null);
+                .ReturnsAsync((Account?)null);
 
             SetUser(userId);
 
@@ -124,11 +122,11 @@ namespace OrangeJuiceBank.Tests
             SetUser(userId);
 
             // Act
-            var result = await _controller.GetStatement(accountId) as OkObjectResult;
+            var result = await _controller.GetStatement(accountId, null, null);
 
             // Assert
             Assert.NotNull(result);
-            var response = Assert.IsAssignableFrom<IEnumerable<TransactionResponse>>(result.Value);
+            var response = Assert.IsAssignableFrom<IEnumerable<TransactionResponse>>(((OkObjectResult)result).Value);
             Assert.Equal(2, response.Count());
         }
 
@@ -140,12 +138,12 @@ namespace OrangeJuiceBank.Tests
             var accountId = Guid.NewGuid();
 
             _accountServiceMock.Setup(s => s.GetAccountByIdAsync(accountId))
-                .ReturnsAsync((Account)null);
+                .ReturnsAsync((Account?)null);
 
             SetUser(userId);
 
             // Act
-            var result = await _controller.GetStatement(accountId);
+            var result = await _controller.GetStatement(accountId, null, null);
 
             // Assert
             Assert.IsType<NotFoundObjectResult>(result);
@@ -177,6 +175,7 @@ namespace OrangeJuiceBank.Tests
 
             _accountServiceMock.Verify(s => s.DepositAsync(accountId, amount), Times.Once);
         }
+
         [Fact]
         public async Task Withdraw_ShouldReturnOk_WhenWithdrawSucceeds()
         {
@@ -212,7 +211,6 @@ namespace OrangeJuiceBank.Tests
             var sourceAccountId = Guid.NewGuid();
             var destinationAccountId = Guid.NewGuid();
 
-            // Mock da conta de origem
             _accountServiceMock.Setup(s => s.GetAccountByIdAsync(sourceAccountId))
                 .ReturnsAsync(new Account
                 {
@@ -220,12 +218,11 @@ namespace OrangeJuiceBank.Tests
                     UserId = userId
                 });
 
-            // Mock da conta de destino
             _accountServiceMock.Setup(s => s.GetAccountByIdAsync(destinationAccountId))
                 .ReturnsAsync(new Account
                 {
                     Id = destinationAccountId,
-                    UserId = Guid.NewGuid() // Outro usuário
+                    UserId = Guid.NewGuid()
                 });
 
             SetUser(userId);
@@ -262,7 +259,6 @@ namespace OrangeJuiceBank.Tests
                 Type = AccountType.Corrente
             };
 
-            // Captura o Account criado
             Account capturedAccount = null;
 
             _accountServiceMock
@@ -278,7 +274,6 @@ namespace OrangeJuiceBank.Tests
 
             Assert.NotNull(createdResult.Value);
 
-            // Verifica que a conta foi criada com os dados corretos
             Assert.NotNull(capturedAccount);
             Assert.Equal(userId, capturedAccount.UserId);
             Assert.Equal(AccountType.Corrente, capturedAccount.Type);
@@ -286,6 +281,7 @@ namespace OrangeJuiceBank.Tests
 
             _accountServiceMock.Verify(s => s.CreateAccountAsync(It.IsAny<Account>()), Times.Once);
         }
+
         [Fact]
         public async Task GetAccounts_ShouldReturnAccountsOfAuthenticatedUser()
         {
@@ -295,22 +291,22 @@ namespace OrangeJuiceBank.Tests
             SetUser(userId);
 
             var accounts = new List<Account>
-    {
-        new Account
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Type = AccountType.Corrente,
-            Balance = 500m
-        },
-        new Account
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Type = AccountType.Investimento,
-            Balance = 1000m
-        }
-    };
+            {
+                new Account
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    Type = AccountType.Corrente,
+                    Balance = 500m
+                },
+                new Account
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    Type = AccountType.Investimento,
+                    Balance = 1000m
+                }
+            };
 
             _accountServiceMock.Setup(s => s.GetAccountsByUserIdAsync(userId))
                 .ReturnsAsync(accounts);
@@ -335,6 +331,65 @@ namespace OrangeJuiceBank.Tests
             Assert.Equal(accounts[1].Balance, accountList[1].Balance);
 
             _accountServiceMock.Verify(s => s.GetAccountsByUserIdAsync(userId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetStatement_ShouldReturnTransactionsFilteredByDate()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var accountId = Guid.NewGuid();
+
+            var baseDate = new DateTime(2024, 1, 15);
+
+            _accountServiceMock.Setup(s => s.GetAccountByIdAsync(accountId))
+                .ReturnsAsync(new Account { Id = accountId, UserId = userId });
+
+            var transactions = new List<Transaction>
+            {
+                new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    Type = TransactionType.Deposito,
+                    Amount = 100,
+                    Timestamp = baseDate.AddDays(-10)
+                },
+                new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    Type = TransactionType.Saque,
+                    Amount = 50,
+                    Timestamp = baseDate
+                },
+                new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    Type = TransactionType.TransferenciaInterna,
+                    Amount = 200,
+                    Timestamp = baseDate.AddDays(5)
+                }
+            };
+
+            _transactionRepoMock.Setup(r => r.GetByAccountIdAsync(accountId))
+                .ReturnsAsync(transactions);
+
+            SetUser(userId);
+
+            var from = baseDate.AddDays(-1);
+            var to = baseDate.AddDays(6);
+
+            // Act
+            var result = await _controller.GetStatement(accountId, from, to);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsAssignableFrom<IEnumerable<TransactionResponse>>(okResult.Value);
+
+            Assert.Equal(2, response.Count());
+            Assert.All(response, t =>
+            {
+                Assert.InRange(t.Timestamp, from, to);
+            });
         }
     }
 }

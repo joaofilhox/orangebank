@@ -7,7 +7,7 @@ namespace OrangeJuiceBank.Domain.Services
         Task WithdrawAsync(Guid accountId, decimal amount);
         Task TransferAsync(Guid sourceAccountId, Guid destinationAccountId, decimal amount);
         Task CreateAccountAsync(Account account);
-        Task<Account> GetAccountByIdAsync(Guid accountId);
+        Task<Account?> GetAccountByIdAsync(Guid accountId);
         Task<IEnumerable<Account>> GetAccountsByUserIdAsync(Guid userId);
 
     }
