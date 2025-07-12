@@ -248,5 +248,43 @@ namespace OrangeJuiceBank.Tests
                 s.TransferAsync(request.SourceAccountId, request.DestinationAccountId, request.Amount),
                 Times.Once);
         }
+
+        [Fact]
+        public async Task CreateAccount_ShouldReturnCreated_WhenAccountIsCreated()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            SetUser(userId);
+
+            var request = new CreateAccountRequest
+            {
+                Type = AccountType.Corrente
+            };
+
+            // Captura o Account criado
+            Account capturedAccount = null;
+
+            _accountServiceMock
+                .Setup(s => s.CreateAccountAsync(It.IsAny<Account>()))
+                .Callback<Account>(a => capturedAccount = a)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.CreateAccount(request);
+
+            // Assert
+            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
+
+            Assert.NotNull(createdResult.Value);
+
+            // Verifica que a conta foi criada com os dados corretos
+            Assert.NotNull(capturedAccount);
+            Assert.Equal(userId, capturedAccount.UserId);
+            Assert.Equal(AccountType.Corrente, capturedAccount.Type);
+            Assert.Equal(0m, capturedAccount.Balance);
+
+            _accountServiceMock.Verify(s => s.CreateAccountAsync(It.IsAny<Account>()), Times.Once);
+        }
     }
 }

@@ -26,5 +26,11 @@ namespace OrangeJuiceBank.Infrastructure.Repositories
             _context.Accounts.Update(account);
             await _context.SaveChangesAsync();
         }
+        public async Task AddAsync(Account account)
+        {
+            await _context.Accounts.AddAsync(account);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
