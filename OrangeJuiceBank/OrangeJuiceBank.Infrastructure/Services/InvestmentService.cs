@@ -1,4 +1,5 @@
-﻿using OrangeJuiceBank.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using OrangeJuiceBank.Domain;
 using OrangeJuiceBank.Domain.Repositories;
 using OrangeJuiceBank.Domain.Services;
 
@@ -84,6 +85,59 @@ namespace OrangeJuiceBank.Infrastructure.Services
                 Id = Guid.NewGuid(),
                 Type = TransactionType.CompraAtivo,
                 Amount = totalPrice,
+                Timestamp = DateTime.UtcNow,
+                SourceAccountId = accountId
+            };
+
+            await _transactionRepository.AddAsync(transaction);
+            await _accountRepository.UpdateAsync(account);
+        }
+        public async Task SellAssetAsync(Guid userId, Guid accountId, Guid assetId, decimal quantity)
+        {
+            if (quantity <= 0)
+                throw new InvalidOperationException("A quantidade deve ser positiva.");
+
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null)
+                throw new InvalidOperationException("Conta não encontrada.");
+
+            if (account.UserId != userId)
+                throw new InvalidOperationException("Conta não pertence ao usuário.");
+
+            if (account.Type != AccountType.Investimento)
+                throw new InvalidOperationException("Somente contas de investimento podem realizar venda de ativos.");
+
+            var asset = await _assetRepository.GetByIdAsync(assetId);
+            if (asset == null)
+                throw new InvalidOperationException("Ativo não encontrado.");
+
+            var investment = account.Investments?.FirstOrDefault(i => i.AssetId == assetId);
+            if (investment == null)
+                throw new InvalidOperationException("O investimento não existe nesta conta.");
+
+            if (investment.Quantity < quantity)
+                throw new InvalidOperationException("Quantidade insuficiente para venda.");
+
+            var totalValue = quantity * asset.CurrentPrice;
+
+            investment.Quantity -= quantity;
+
+            if (investment.Quantity == 0)
+            {
+                await _investmentRepository.RemoveAsync(investment);
+            }
+            else
+            {
+                await _accountRepository.UpdateAsync(account);
+            }
+
+            account.Balance += totalValue;
+
+            var transaction = new Transaction
+            {
+                Id = Guid.NewGuid(),
+                Type = TransactionType.VendaAtivo,
+                Amount = totalValue,
                 Timestamp = DateTime.UtcNow,
                 SourceAccountId = accountId
             };
