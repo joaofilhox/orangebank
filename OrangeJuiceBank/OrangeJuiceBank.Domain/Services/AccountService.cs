@@ -117,6 +117,11 @@ namespace OrangeJuiceBank.Infrastructure.Services
 
             await _accountRepository.AddAsync(account);
         }
+        public async Task<IEnumerable<Account>> GetAccountsByUserIdAsync(Guid userId)
+        {
+            return await _accountRepository.GetByUserIdAsync(userId);
+        }
+
 
     }
 }

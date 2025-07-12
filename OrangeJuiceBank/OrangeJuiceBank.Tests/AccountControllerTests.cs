@@ -286,5 +286,55 @@ namespace OrangeJuiceBank.Tests
 
             _accountServiceMock.Verify(s => s.CreateAccountAsync(It.IsAny<Account>()), Times.Once);
         }
+        [Fact]
+        public async Task GetAccounts_ShouldReturnAccountsOfAuthenticatedUser()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            SetUser(userId);
+
+            var accounts = new List<Account>
+    {
+        new Account
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Type = AccountType.Corrente,
+            Balance = 500m
+        },
+        new Account
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Type = AccountType.Investimento,
+            Balance = 1000m
+        }
+    };
+
+            _accountServiceMock.Setup(s => s.GetAccountsByUserIdAsync(userId))
+                .ReturnsAsync(accounts);
+
+            // Act
+            var result = await _controller.GetAccounts();
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsAssignableFrom<IEnumerable<AccountSummaryResponse>>(okResult.Value);
+
+            Assert.Equal(2, response.Count());
+
+            var accountList = response.ToList();
+
+            Assert.Equal(accounts[0].Id, accountList[0].Id);
+            Assert.Equal(accounts[0].Type, accountList[0].Type);
+            Assert.Equal(accounts[0].Balance, accountList[0].Balance);
+
+            Assert.Equal(accounts[1].Id, accountList[1].Id);
+            Assert.Equal(accounts[1].Type, accountList[1].Type);
+            Assert.Equal(accounts[1].Balance, accountList[1].Balance);
+
+            _accountServiceMock.Verify(s => s.GetAccountsByUserIdAsync(userId), Times.Once);
+        }
     }
 }

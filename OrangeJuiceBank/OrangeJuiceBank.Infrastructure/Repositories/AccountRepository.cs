@@ -31,6 +31,13 @@ namespace OrangeJuiceBank.Infrastructure.Repositories
             await _context.Accounts.AddAsync(account);
             await _context.SaveChangesAsync();
         }
+        public async Task<IEnumerable<Account>> GetByUserIdAsync(Guid userId)
+        {
+            return await _context.Accounts
+                .Where(a => a.UserId == userId)
+                .ToListAsync();
+        }
+
 
     }
 }
