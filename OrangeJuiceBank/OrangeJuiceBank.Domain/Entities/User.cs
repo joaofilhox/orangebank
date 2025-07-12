@@ -4,7 +4,7 @@
     public string FullName { get; set; }
     public string Email { get; set; }
     public string Cpf { get; set; }
-    public DateTime DateOfBirth { get; set; }
+    public DateTime BirthDate { get; set; }
 
     public byte[] PasswordHash { get; set; }
     public byte[] PasswordSalt { get; set; }
