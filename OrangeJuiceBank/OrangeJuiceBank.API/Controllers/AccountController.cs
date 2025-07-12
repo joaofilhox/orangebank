@@ -134,7 +134,9 @@ namespace OrangeJuiceBank.API.Controllers
         }
 
         [HttpGet("{id}/statement")]
-        public async Task<IActionResult> GetStatement(Guid id)
+        public async Task<IActionResult> GetStatement( Guid id,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
         {
             var userId = GetUserId();
             var account = await _accountService.GetAccountByIdAsync(id);
@@ -146,6 +148,12 @@ namespace OrangeJuiceBank.API.Controllers
 
             var transactions = await _transactionRepository.GetByAccountIdAsync(id);
 
+            if (from.HasValue)
+                transactions = transactions.Where(t => t.Timestamp >= from.Value).ToList();
+
+            if (to.HasValue)
+                transactions = transactions.Where(t => t.Timestamp <= to.Value).ToList();
+
             var result = transactions.Select(t => new TransactionResponse
             {
                 Id = t.Id,
@@ -156,8 +164,6 @@ namespace OrangeJuiceBank.API.Controllers
 
             return Ok(result);
         }
-
-        // Método helper para extrair o Guid do usuário logado
         private Guid GetUserId()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
