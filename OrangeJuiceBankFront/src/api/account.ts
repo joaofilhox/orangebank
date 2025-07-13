@@ -107,6 +107,25 @@ export async function transfer(data: TransferData): Promise<void> {
     )
 }
 
+export interface TransferByEmailData {
+    sourceAccountId: string
+    destinationEmail: string
+    amount: number
+}
+
+export async function transferByEmail(data: TransferByEmailData): Promise<void> {
+    await axios.post(
+        `${API_URL}/Account/transfer-by-email`,
+        data,
+        {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    )
+}
+
 export interface Asset {
     id: string
     name: string

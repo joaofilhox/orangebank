@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { transferSchema } from './schema'
 import type { TransferSchema } from './schema'
 import { useEffect, useState } from 'react'
-import { getAccounts, transfer } from '../../api/account'
+import { getAccounts, transfer, transferByEmail } from '../../api/account'
 import type { Account } from '../../api/account'
 import { useNavigate } from 'react-router-dom'
 
@@ -100,14 +100,14 @@ export default function TransferPage() {
         } else {
             // Transferência para outro usuário
             if (!data.destinationAccountId) {
-                setApiError('Informe o número da conta destino.')
+                setApiError('Informe o e-mail do destinatário.')
                 return
             }
 
             try {
-                await transfer({
+                await transferByEmail({
                     sourceAccountId: source.id,
-                    destinationAccountId: data.destinationAccountId,
+                    destinationEmail: data.destinationAccountId,
                     amount: amount
                 })
                 navigate('/dashboard')
