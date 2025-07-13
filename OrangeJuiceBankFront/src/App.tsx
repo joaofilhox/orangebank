@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import RegisterPage from './pages/RegisterPage'
 import DepositPage from './pages/DepositPage'
+import WithdrawPage from './pages/WithdrawPage'
 import ProtectedRoute from './routes/ProtectedRoute'
 import PublicOnlyRoute from './routes/PublicOnlyRoute'
 
@@ -98,6 +99,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DepositPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/withdraw"
+          element={
+            <ProtectedRoute>
+              <WithdrawPage />
             </ProtectedRoute>
           }
         />
