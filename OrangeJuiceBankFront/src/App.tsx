@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import RegisterPage from './pages/RegisterPage'
+import DepositPage from './pages/DepositPage'
 import ProtectedRoute from './routes/ProtectedRoute'
 import PublicOnlyRoute from './routes/PublicOnlyRoute'
 
@@ -92,6 +93,14 @@ function App() {
           }
         />
         <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/deposit"
+          element={
+            <ProtectedRoute>
+              <DepositPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={

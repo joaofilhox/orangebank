@@ -4,9 +4,8 @@ import { getToken } from '../utils/token'
 const API_URL = 'https://localhost:7253/api'
 
 export interface Account {
-    id: number
-    accountNumber: string
-    type: string
+    id: string
+    type: number
     balance: number
 }
 
@@ -41,7 +40,7 @@ export async function hasAccounts(): Promise<boolean> {
 }
 
 // Função para buscar transações de uma conta
-export async function getTransactions(accountId: number): Promise<Transaction[]> {
+export async function getTransactions(accountId: string): Promise<Transaction[]> {
     const response = await axios.get(`${API_URL}/Account/${accountId}/transactions`, {
         headers: {
             Authorization: `Bearer ${getToken()}`
@@ -58,6 +57,22 @@ export async function createAccount(type: number): Promise<void> {
         {
             headers: {
                 Authorization: `Bearer ${token}`
+            }
+        }
+    )
+}
+
+export async function deposit(accountId: string, amount: number): Promise<void> {
+    console.log('Fazendo depósito:', { accountId, amount })
+    console.log('URL da requisição:', `${API_URL}/Account/${accountId}/deposit`)
+
+    await axios.post(
+        `${API_URL}/Account/${accountId}/deposit`,
+        amount,
+        {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
             }
         }
     )

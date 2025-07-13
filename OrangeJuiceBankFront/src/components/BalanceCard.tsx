@@ -10,7 +10,7 @@ export default function BalanceCard({ title, amount }: BalanceCardProps) {
                 border: '1px solid #ccc',
                 padding: '1rem',
                 borderRadius: '8px',
-                minWidth: '180px',
+                minWidth: '200px',
                 textAlign: 'center'
             }}
         >
