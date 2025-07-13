@@ -156,38 +156,38 @@ export async function sellAsset(accountId: string, assetId: string, quantity: nu
 }
 
 export interface PortfolioItem {
-    assetId: string
+    investmentId: string
+    accountId: string
     assetName: string
+    assetType: string
     quantity: number
     averagePrice: number
     currentPrice: number
-    totalValue: number
-    profitLoss: number
 }
 
 export async function getPortfolio(): Promise<PortfolioItem[]> {
+    console.log('Chamando API de portfólio...')
     const response = await axios.get(`${API_URL}/Investment/portfolio`, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
     })
+    console.log('Resposta da API de portfólio:', response.data)
     return response.data
 }
 
 export interface InvestmentReport {
-    totalInvested: number
-    currentValue: number
-    totalProfitLoss: number
-    profitLossPercentage: number
     portfolioItems: PortfolioItem[]
 }
 
 export async function getInvestmentReport(): Promise<InvestmentReport> {
+    console.log('Chamando API de relatório de investimentos...')
     const response = await axios.get(`${API_URL}/Reports/investments`, {
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
     })
+    console.log('Resposta da API de investimentos:', response.data)
     return response.data
 }
 
@@ -198,8 +198,23 @@ export interface TaxReport {
     transactions: any[]
 }
 
-export async function getTaxReport(year: number): Promise<TaxReport> {
-    const response = await axios.get(`${API_URL}/Reports/tax?year=${year}`, {
+export async function getTaxReport(year?: number): Promise<TaxReport> {
+    const response = await axios.get(`${API_URL}/Reports/tax`, {
+        params: year ? { year } : {},
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    })
+    return response.data
+}
+
+export async function getTransactionsReport(accountId: string, from?: string, to?: string): Promise<Transaction[]> {
+    const params: any = {}
+    if (from) params.from = from
+    if (to) params.to = to
+
+    const response = await axios.get(`${API_URL}/Account/${accountId}/statement`, {
+        params,
         headers: {
             Authorization: `Bearer ${getToken()}`
         }
