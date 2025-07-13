@@ -63,11 +63,21 @@ export async function createAccount(type: number): Promise<void> {
 }
 
 export async function deposit(accountId: string, amount: number): Promise<void> {
-    console.log('Fazendo depósito:', { accountId, amount })
-    console.log('URL da requisição:', `${API_URL}/Account/${accountId}/deposit`)
-
     await axios.post(
         `${API_URL}/Account/${accountId}/deposit`,
+        amount,
+        {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    )
+}
+
+export async function withdraw(accountId: string, amount: number): Promise<void> {
+    await axios.post(
+        `${API_URL}/Account/${accountId}/withdraw`,
         amount,
         {
             headers: {
