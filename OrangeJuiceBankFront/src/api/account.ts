@@ -105,4 +105,104 @@ export async function transfer(data: TransferData): Promise<void> {
             }
         }
     )
+}
+
+export interface Asset {
+    id: string
+    name: string
+    type: number
+    currentPrice: number
+}
+
+export async function getAssets(): Promise<Asset[]> {
+    const response = await axios.get(`${API_URL}/Assets`, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    })
+    return response.data
+}
+
+export async function buyAsset(accountId: string, assetId: string, quantity: number): Promise<void> {
+    await axios.post(
+        `${API_URL}/Investment/buy`,
+        {
+            accountId,
+            assetId,
+            quantity
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        }
+    )
+}
+
+export async function sellAsset(accountId: string, assetId: string, quantity: number): Promise<void> {
+    await axios.post(
+        `${API_URL}/Investment/sell`,
+        {
+            accountId,
+            assetId,
+            quantity
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        }
+    )
+}
+
+export interface PortfolioItem {
+    assetId: string
+    assetName: string
+    quantity: number
+    averagePrice: number
+    currentPrice: number
+    totalValue: number
+    profitLoss: number
+}
+
+export async function getPortfolio(): Promise<PortfolioItem[]> {
+    const response = await axios.get(`${API_URL}/Investment/portfolio`, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    })
+    return response.data
+}
+
+export interface InvestmentReport {
+    totalInvested: number
+    currentValue: number
+    totalProfitLoss: number
+    profitLossPercentage: number
+    portfolioItems: PortfolioItem[]
+}
+
+export async function getInvestmentReport(): Promise<InvestmentReport> {
+    const response = await axios.get(`${API_URL}/Reports/investments`, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    })
+    return response.data
+}
+
+export interface TaxReport {
+    year: number
+    totalTax: number
+    taxableIncome: number
+    transactions: any[]
+}
+
+export async function getTaxReport(year: number): Promise<TaxReport> {
+    const response = await axios.get(`${API_URL}/Reports/tax?year=${year}`, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    })
+    return response.data
 } 
