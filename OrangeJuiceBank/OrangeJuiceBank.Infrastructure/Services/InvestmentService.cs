@@ -120,6 +120,18 @@ namespace OrangeJuiceBank.Infrastructure.Services
 
             var totalValue = quantity * asset.CurrentPrice;
 
+            // 🔸 Calcular lucro e imposto
+            var lucro = (asset.CurrentPrice - investment.AveragePrice) * quantity;
+            if (lucro < 0)
+                lucro = 0;
+
+            decimal imposto = 0;
+            if (asset.Type == AssetType.Acao)
+                imposto = Math.Round(lucro * 0.15m, 2);
+            else if (asset.Type == AssetType.Cdb || asset.Type == AssetType.TesouroDireto)
+                imposto = Math.Round(lucro * 0.22m, 2);
+
+            // Atualizar quantidade investida
             investment.Quantity -= quantity;
 
             if (investment.Quantity == 0)
@@ -131,8 +143,10 @@ namespace OrangeJuiceBank.Infrastructure.Services
                 await _accountRepository.UpdateAsync(account);
             }
 
-            account.Balance += totalValue;
+            // Creditar valor líquido
+            account.Balance += (totalValue - imposto);
 
+            // Registrar transação
             var transaction = new Transaction
             {
                 Id = Guid.NewGuid(),
@@ -144,6 +158,7 @@ namespace OrangeJuiceBank.Infrastructure.Services
 
             await _transactionRepository.AddAsync(transaction);
             await _accountRepository.UpdateAsync(account);
+
         }
     }
 }

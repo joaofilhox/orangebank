@@ -28,6 +28,9 @@ namespace OrangeJuiceBank.Infrastructure.Services
             if (account == null)
                 throw new InvalidOperationException("Conta não encontrada.");
 
+            if (account.Type != AccountType.Corrente)
+                throw new InvalidOperationException("Apenas contas correntes permitem esta operação.");
+
             account.Balance += amount;
 
             var transaction = new Transaction
@@ -51,6 +54,9 @@ namespace OrangeJuiceBank.Infrastructure.Services
             var account = await _accountRepository.GetByIdAsync(accountId);
             if (account == null)
                 throw new InvalidOperationException("Conta não encontrada.");
+
+            if (account.Type != AccountType.Corrente)
+                throw new InvalidOperationException("Apenas contas correntes permitem saque.");
 
             if (account.Balance < amount)
                 throw new InvalidOperationException("Saldo insuficiente.");
