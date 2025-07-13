@@ -31,6 +31,7 @@ namespace OrangeJuiceBank.Tests
             var account = new Account
             {
                 Id = accountId,
+                Type = AccountType.Corrente,
                 Balance = 100
             };
 
@@ -67,6 +68,7 @@ namespace OrangeJuiceBank.Tests
             var account = new Account
             {
                 Id = accountId,
+                Type = AccountType.Corrente,
                 Balance = 100
             };
 

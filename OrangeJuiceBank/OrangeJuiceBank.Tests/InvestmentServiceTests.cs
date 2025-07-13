@@ -140,5 +140,159 @@ namespace OrangeJuiceBank.Tests
 
             Assert.Equal(980, account.Balance); // 1000 - (2*10)
         }
+
+        [Fact]
+        public async Task SellAsset_ShouldCreditFullAmount_WhenNoProfit()
+        {
+            // Arrange
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Investimento,
+                Balance = 0,
+                Investments = new List<Investment>()
+            };
+
+            var asset = new Asset
+            {
+                Id = Guid.NewGuid(),
+                CurrentPrice = 10,
+                Type = AssetType.Acao
+            };
+
+            var investment = new Investment
+            {
+                Id = Guid.NewGuid(),
+                AccountId = account.Id,
+                AssetId = asset.Id,
+                Quantity = 5,
+                AveragePrice = 12
+            };
+
+            account.Investments.Add(investment);
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(account.Id))
+                .ReturnsAsync(account);
+            _assetRepoMock.Setup(r => r.GetByIdAsync(asset.Id))
+                .ReturnsAsync(asset);
+            _transactionRepoMock.Setup(r => r.AddAsync(It.IsAny<Transaction>()))
+                .Returns(Task.CompletedTask);
+            _accountRepoMock.Setup(r => r.UpdateAsync(account))
+                .Returns(Task.CompletedTask);
+
+            var service = CreateService();
+
+            // Act
+            await service.SellAssetAsync(account.UserId, account.Id, asset.Id, 2);
+
+            // Assert
+            // Lucro negativo => imposto zero
+            Assert.Equal(20, account.Balance);
+        }
+
+        [Fact]
+        public async Task SellAsset_ShouldCreditNetAmount_WhenProfitOnStock()
+        {
+            // Arrange
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Investimento,
+                Balance = 0,
+                Investments = new List<Investment>()
+            };
+
+            var asset = new Asset
+            {
+                Id = Guid.NewGuid(),
+                CurrentPrice = 20,
+                Type = AssetType.Acao
+            };
+
+            var investment = new Investment
+            {
+                Id = Guid.NewGuid(),
+                AccountId = account.Id,
+                AssetId = asset.Id,
+                Quantity = 10,
+                AveragePrice = 10
+            };
+
+            account.Investments.Add(investment);
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(account.Id))
+                .ReturnsAsync(account);
+            _assetRepoMock.Setup(r => r.GetByIdAsync(asset.Id))
+                .ReturnsAsync(asset);
+            _transactionRepoMock.Setup(r => r.AddAsync(It.IsAny<Transaction>()))
+                .Returns(Task.CompletedTask);
+            _accountRepoMock.Setup(r => r.UpdateAsync(account))
+                .Returns(Task.CompletedTask);
+
+            var service = CreateService();
+
+            // Act
+            await service.SellAssetAsync(account.UserId, account.Id, asset.Id, 2);
+
+            // Assert
+            // Lucro = (20-10)*2 =20
+            // Imposto=3
+            // Valor líquido=37
+            Assert.Equal(37, account.Balance);
+        }
+
+        [Fact]
+        public async Task SellAsset_ShouldCreditNetAmount_WhenProfitOnFixedIncome()
+        {
+            // Arrange
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Investimento,
+                Balance = 0,
+                Investments = new List<Investment>()
+            };
+
+            var asset = new Asset
+            {
+                Id = Guid.NewGuid(),
+                CurrentPrice = 200,
+                Type = AssetType.Cdb
+            };
+
+            var investment = new Investment
+            {
+                Id = Guid.NewGuid(),
+                AccountId = account.Id,
+                AssetId = asset.Id,
+                Quantity = 1,
+                AveragePrice = 100
+            };
+
+            account.Investments.Add(investment);
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(account.Id))
+                .ReturnsAsync(account);
+            _assetRepoMock.Setup(r => r.GetByIdAsync(asset.Id))
+                .ReturnsAsync(asset);
+            _transactionRepoMock.Setup(r => r.AddAsync(It.IsAny<Transaction>()))
+                .Returns(Task.CompletedTask);
+            _accountRepoMock.Setup(r => r.UpdateAsync(account))
+                .Returns(Task.CompletedTask);
+
+            var service = CreateService();
+
+            // Act
+            await service.SellAssetAsync(account.UserId, account.Id, asset.Id, 1);
+
+            // Assert
+            // Lucro=100
+            // Imposto=22
+            // Líquido=178
+            Assert.Equal(178, account.Balance);
+        }
     }
 }
