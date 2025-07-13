@@ -86,7 +86,7 @@ export default function DashboardPage() {
                 <button onClick={() => navigate('/withdraw')} style={btnStyle}>
                     Sacar
                 </button>
-                <button onClick={() => alert('Transferir')} style={btnStyle}>
+                <button onClick={() => navigate('/transfer')} style={btnStyle}>
                     Transferir
                 </button>
                 <button onClick={() => alert('Investir')} style={btnStyle}>

@@ -86,4 +86,23 @@ export async function withdraw(accountId: string, amount: number): Promise<void>
             }
         }
     )
+}
+
+export interface TransferData {
+    sourceAccountId: string
+    destinationAccountId: string
+    amount: number
+}
+
+export async function transfer(data: TransferData): Promise<void> {
+    await axios.post(
+        `${API_URL}/Account/transfer`,
+        data,
+        {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    )
 } 
