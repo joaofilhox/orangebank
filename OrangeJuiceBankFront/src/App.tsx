@@ -7,6 +7,7 @@ import DepositPage from './pages/DepositPage'
 import WithdrawPage from './pages/WithdrawPage'
 import TransferPage from './pages/TransferPage'
 import BuyAssetPage from './pages/BuyAssetPage'
+import ReportsPage from './pages/ReportsPage'
 import ProtectedRoute from './routes/ProtectedRoute'
 import PublicOnlyRoute from './routes/PublicOnlyRoute'
 
@@ -125,6 +126,14 @@ function App() {
           element={
             <ProtectedRoute>
               <BuyAssetPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
             </ProtectedRoute>
           }
         />

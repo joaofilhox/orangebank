@@ -92,6 +92,9 @@ export default function DashboardPage() {
                 <button onClick={() => navigate('/buy-asset')} style={btnStyle}>
                     Investir
                 </button>
+                <button onClick={() => navigate('/reports')} style={btnStyle}>
+                    Relatórios
+                </button>
                 <button
                     onClick={() => {
                         clearToken()
