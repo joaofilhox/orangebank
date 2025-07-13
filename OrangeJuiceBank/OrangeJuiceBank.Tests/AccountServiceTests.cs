@@ -14,13 +14,15 @@ namespace OrangeJuiceBank.Tests
     {
         private readonly Mock<IAccountRepository> _accountRepoMock;
         private readonly Mock<ITransactionRepository> _transactionRepoMock;
+        private readonly Mock<IUserRepository> _userRepoMock;
         private readonly AccountService _service;
 
         public AccountServiceTests()
         {
             _accountRepoMock = new Mock<IAccountRepository>();
             _transactionRepoMock = new Mock<ITransactionRepository>();
-            _service = new AccountService(_accountRepoMock.Object, _transactionRepoMock.Object);
+            _userRepoMock = new Mock<IUserRepository>();
+            _service = new AccountService(_accountRepoMock.Object, _transactionRepoMock.Object, _userRepoMock.Object);
         }
 
         [Fact]
@@ -266,6 +268,129 @@ namespace OrangeJuiceBank.Tests
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _service.TransferAsync(accountId, accountId, 100m));
+        }
+
+        [Fact]
+        public async Task TransferByEmailAsync_ShouldTransferSuccessfully_WhenValidEmail()
+        {
+            // Arrange
+            var sourceAccountId = Guid.NewGuid();
+            var destinationUserId = Guid.NewGuid();
+            var destinationAccountId = Guid.NewGuid();
+            var destinationEmail = "destinatario@email.com";
+            var amount = 200m;
+
+            var destinationUser = new User
+            {
+                Id = destinationUserId,
+                Email = destinationEmail
+            };
+
+            var destinationAccount = new Account
+            {
+                Id = destinationAccountId,
+                UserId = destinationUserId,
+                Type = AccountType.Corrente,
+                Balance = 0m
+            };
+
+            var sourceAccount = new Account
+            {
+                Id = sourceAccountId,
+                UserId = Guid.NewGuid(),
+                Type = AccountType.Corrente,
+                Balance = 1000m
+            };
+
+            _userRepoMock.Setup(r => r.GetByEmailAsync(destinationEmail))
+                .ReturnsAsync(destinationUser);
+
+            _accountRepoMock.Setup(r => r.GetByUserIdAsync(destinationUserId))
+                .ReturnsAsync(new List<Account> { destinationAccount });
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(sourceAccountId))
+                .ReturnsAsync(sourceAccount);
+
+            _accountRepoMock.Setup(r => r.GetByIdAsync(destinationAccountId))
+                .ReturnsAsync(destinationAccount);
+
+            // Act
+            await _service.TransferByEmailAsync(sourceAccountId, destinationEmail, amount);
+
+            // Assert
+            _userRepoMock.Verify(r => r.GetByEmailAsync(destinationEmail), Times.Once);
+            _accountRepoMock.Verify(r => r.GetByUserIdAsync(destinationUserId), Times.Once);
+            _accountRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Account>()), Times.Exactly(2));
+            _transactionRepoMock.Verify(t => t.AddAsync(It.IsAny<Transaction>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task TransferByEmailAsync_ShouldThrow_WhenEmailNotFound()
+        {
+            // Arrange
+            var sourceAccountId = Guid.NewGuid();
+            var destinationEmail = "inexistente@email.com";
+            var amount = 200m;
+
+            _userRepoMock.Setup(r => r.GetByEmailAsync(destinationEmail))
+                .ReturnsAsync((User)null);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.TransferByEmailAsync(sourceAccountId, destinationEmail, amount));
+
+            Assert.Equal("Usuário com este email não encontrado.", ex.Message);
+        }
+
+        [Fact]
+        public async Task TransferByEmailAsync_ShouldThrow_WhenUserHasNoCorrenteAccount()
+        {
+            // Arrange
+            var sourceAccountId = Guid.NewGuid();
+            var destinationUserId = Guid.NewGuid();
+            var destinationEmail = "destinatario@email.com";
+            var amount = 200m;
+
+            var destinationUser = new User
+            {
+                Id = destinationUserId,
+                Email = destinationEmail
+            };
+
+            // Usuário só tem conta de investimento
+            var destinationAccount = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = destinationUserId,
+                Type = AccountType.Investimento,
+                Balance = 0m
+            };
+
+            _userRepoMock.Setup(r => r.GetByEmailAsync(destinationEmail))
+                .ReturnsAsync(destinationUser);
+
+            _accountRepoMock.Setup(r => r.GetByUserIdAsync(destinationUserId))
+                .ReturnsAsync(new List<Account> { destinationAccount });
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.TransferByEmailAsync(sourceAccountId, destinationEmail, amount));
+
+            Assert.Equal("Usuário não possui conta corrente.", ex.Message);
+        }
+
+        [Fact]
+        public async Task TransferByEmailAsync_ShouldThrow_WhenEmailIsEmpty()
+        {
+            // Arrange
+            var sourceAccountId = Guid.NewGuid();
+            var amount = 200m;
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.TransferByEmailAsync(sourceAccountId, "", amount));
+
+            Assert.Equal("Email do destinatário é obrigatório.", ex.Message);
         }
     }
 }

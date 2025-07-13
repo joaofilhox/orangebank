@@ -113,6 +113,22 @@ namespace OrangeJuiceBank.API.Controllers
             return Ok("Transferência realizada com sucesso.");
         }
 
+        [HttpPost("transfer-by-email")]
+        public async Task<IActionResult> TransferByEmail([FromBody] TransferByEmailRequest request)
+        {
+            var userId = GetUserId();
+
+            // Verifica origem
+            var source = await _accountService.GetAccountByIdAsync(request.SourceAccountId);
+            if (source == null)
+                return NotFound("Conta de origem não encontrada.");
+            if (source.UserId != userId)
+                return Forbid("A conta de origem não pertence ao usuário autenticado.");
+
+            await _accountService.TransferByEmailAsync(request.SourceAccountId, request.DestinationEmail, request.Amount);
+            return Ok("Transferência realizada com sucesso.");
+        }
+
         [HttpGet("{id}/balance")]
         public async Task<IActionResult> GetBalance(Guid id)
         {

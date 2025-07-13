@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using OrangeJuiceBank.Domain.Repositories;
 using OrangeJuiceBank.Domain.Services;
 using OrangeJuiceBank.Domain;
+using System.Linq;
 
 namespace OrangeJuiceBank.Infrastructure.Services
 {
@@ -10,13 +11,16 @@ namespace OrangeJuiceBank.Infrastructure.Services
     {
         private readonly IAccountRepository _accountRepository;
         private readonly ITransactionRepository _transactionRepository;
+        private readonly IUserRepository _userRepository;
 
         public AccountService(
             IAccountRepository accountRepository,
-            ITransactionRepository transactionRepository)
+            ITransactionRepository transactionRepository,
+            IUserRepository userRepository)
         {
             _accountRepository = accountRepository;
             _transactionRepository = transactionRepository;
+            _userRepository = userRepository;
         }
 
         public async Task DepositAsync(Guid accountId, decimal amount)
@@ -141,6 +145,27 @@ namespace OrangeJuiceBank.Infrastructure.Services
 
             await _accountRepository.UpdateAsync(source);
             await _accountRepository.UpdateAsync(destination);
+        }
+
+        public async Task TransferByEmailAsync(Guid sourceAccountId, string destinationEmail, decimal amount)
+        {
+            if (string.IsNullOrWhiteSpace(destinationEmail))
+                throw new InvalidOperationException("Email do destinatário é obrigatório.");
+
+            // Buscar usuário pelo email
+            var destinationUser = await _userRepository.GetByEmailAsync(destinationEmail);
+            if (destinationUser == null)
+                throw new InvalidOperationException("Usuário com este email não encontrado.");
+
+            // Buscar contas do usuário
+            var destinationAccounts = await _accountRepository.GetByUserIdAsync(destinationUser.Id);
+            var destinationAccount = destinationAccounts.FirstOrDefault(a => a.Type == AccountType.Corrente);
+            
+            if (destinationAccount == null)
+                throw new InvalidOperationException("Usuário não possui conta corrente.");
+
+            // Fazer a transferência usando o método existente
+            await TransferAsync(sourceAccountId, destinationAccount.Id, amount);
         }
 
         public async Task<Account?> GetAccountByIdAsync(Guid accountId)
