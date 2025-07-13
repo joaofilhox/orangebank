@@ -64,7 +64,23 @@ export default function DepositPage() {
 
     return (
         <div style={{ maxWidth: '400px', margin: '0 auto', padding: '2rem' }}>
-            <h1>Depositar</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h1>Depositar</h1>
+                <button
+                    type="button"
+                    onClick={() => navigate('/dashboard')}
+                    style={{
+                        padding: '0.5rem 1rem',
+                        background: '#6c757d',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Voltar
+                </button>
+            </div>
             <form onSubmit={handleSubmit(onSubmit)}>
                 {currentAccount && (
                     <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
