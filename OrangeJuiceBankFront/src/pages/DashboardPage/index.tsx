@@ -11,20 +11,28 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
 
+
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const acc = await getAccounts()
-                setAccounts(acc)
+                // Ordenar: Conta Corrente (type: 1) primeiro, depois Conta Investimento (type: 2)
+                const sortedAccounts = acc.sort((a, b) => a.type - b.type)
+                setAccounts(sortedAccounts)
 
-                // Busca transações da primeira conta
-                if (acc.length > 0) {
-                    const tx = await getTransactions(acc[0].id)
-                    setTransactions(tx.slice(0, 5))
+                // Busca transações da primeira conta (separadamente para não afetar as contas)
+                if (sortedAccounts.length > 0) {
+                    try {
+                        const tx = await getTransactions(sortedAccounts[0].id)
+                        setTransactions(tx.slice(0, 5))
+                    } catch (txError) {
+                        console.error('Erro ao carregar transações:', txError)
+                        setTransactions([])
+                    }
                 }
             } catch (err) {
-                console.error('Erro ao carregar dados:', err)
-                // Não limpa o token automaticamente, apenas mostra dados vazios
+                console.error('Erro ao carregar contas:', err)
                 setAccounts([])
                 setTransactions([])
             } finally {
@@ -51,8 +59,7 @@ export default function DashboardPage() {
                     borderRadius: '8px',
                     marginBottom: '2rem'
                 }}>
-                    <p>Nenhuma conta encontrada ou API não disponível.</p>
-                    <p>Você está logado com sucesso! 🎉</p>
+                    <p>Carregando suas contas...</p>
                 </div>
             ) : (
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
@@ -60,7 +67,7 @@ export default function DashboardPage() {
                         <BalanceCard
                             key={account.id}
                             title={
-                                account.type === 'Corrente'
+                                account.type === 1
                                     ? 'Conta Corrente'
                                     : 'Conta Investimento'
                             }
@@ -73,7 +80,7 @@ export default function DashboardPage() {
             {transactions.length > 0 && <TransactionList transactions={transactions} />}
 
             <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                <button onClick={() => alert('Depositar')} style={btnStyle}>
+                <button onClick={() => navigate('/deposit')} style={btnStyle}>
                     Depositar
                 </button>
                 <button onClick={() => alert('Sacar')} style={btnStyle}>
