@@ -391,5 +391,100 @@ namespace OrangeJuiceBank.Tests
                 Assert.InRange(t.Timestamp, from, to);
             });
         }
+
+        [Fact]
+        public async Task TransferByEmail_ShouldReturnOk_WhenTransferSucceeds()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var sourceAccountId = Guid.NewGuid();
+            var destinationEmail = "destinatario@email.com";
+
+            _accountServiceMock.Setup(s => s.GetAccountByIdAsync(sourceAccountId))
+                .ReturnsAsync(new Account
+                {
+                    Id = sourceAccountId,
+                    UserId = userId
+                });
+
+            SetUser(userId);
+
+            var request = new TransferByEmailRequest
+            {
+                SourceAccountId = sourceAccountId,
+                DestinationEmail = destinationEmail,
+                Amount = 300m
+            };
+
+            // Act
+            var result = await _controller.TransferByEmail(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Transferência realizada com sucesso.", okResult.Value);
+
+            _accountServiceMock.Verify(s =>
+                s.TransferByEmailAsync(request.SourceAccountId, request.DestinationEmail, request.Amount),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task TransferByEmail_ShouldReturnForbid_WhenSourceAccountNotBelongsToUser()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var sourceAccountId = Guid.NewGuid();
+            var destinationEmail = "destinatario@email.com";
+
+            _accountServiceMock.Setup(s => s.GetAccountByIdAsync(sourceAccountId))
+                .ReturnsAsync(new Account
+                {
+                    Id = sourceAccountId,
+                    UserId = Guid.NewGuid() // Diferente do usuário autenticado
+                });
+
+            SetUser(userId);
+
+            var request = new TransferByEmailRequest
+            {
+                SourceAccountId = sourceAccountId,
+                DestinationEmail = destinationEmail,
+                Amount = 300m
+            };
+
+            // Act
+            var result = await _controller.TransferByEmail(request);
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task TransferByEmail_ShouldReturnNotFound_WhenSourceAccountNotFound()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var sourceAccountId = Guid.NewGuid();
+            var destinationEmail = "destinatario@email.com";
+
+            _accountServiceMock.Setup(s => s.GetAccountByIdAsync(sourceAccountId))
+                .ReturnsAsync((Account)null);
+
+            SetUser(userId);
+
+            var request = new TransferByEmailRequest
+            {
+                SourceAccountId = sourceAccountId,
+                DestinationEmail = destinationEmail,
+                Amount = 300m
+            };
+
+            // Act
+            var result = await _controller.TransferByEmail(request);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("Conta de origem não encontrada.", notFoundResult.Value);
+        }
     }
 }
