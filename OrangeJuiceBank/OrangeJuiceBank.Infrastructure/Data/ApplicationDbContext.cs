@@ -69,32 +69,102 @@ namespace OrangeJuiceBank.Infrastructure.Data
             modelBuilder.Entity<Asset>().HasData(
                 new Asset
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Id = Guid.Parse("11111111-1111-0000-0000-000000000001"),
                     Name = "Boi Bom",
                     Type = AssetType.Acao,
                     CurrentPrice = 25.50m
                 },
                 new Asset
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    Id = Guid.Parse("11111111-1111-0000-0000-000000000002"),
+                    Name = "Boi Nobre",
+                    Type = AssetType.Acao,
+                    CurrentPrice = 18.75m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("11111111-1111-0000-0000-000000000003"),
+                    Name = "Água pra Todos",
+                    Type = AssetType.Acao,
+                    CurrentPrice = 42.30m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("11111111-1111-0000-0000-000000000004"),
+                    Name = "Energia BR",
+                    Type = AssetType.Acao,
+                    CurrentPrice = 35.80m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("11111111-1111-0000-0000-000000000005"),
                     Name = "NuvemCinza",
                     Type = AssetType.Acao,
                     CurrentPrice = 120.45m
                 },
                 new Asset
                 {
-                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    Id = Guid.Parse("11111111-1111-0000-0000-000000000006"),
+                    Name = "ChipZilla",
+                    Type = AssetType.Acao,
+                    CurrentPrice = 95.60m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("11111111-1111-0000-0000-000000000007"),
+                    Name = "Soja Brasil",
+                    Type = AssetType.Acao,
+                    CurrentPrice = 32.40m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("11111111-1111-0000-0000-000000000008"),
+                    Name = "Café Premium",
+                    Type = AssetType.Acao,
+                    CurrentPrice = 28.90m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("22222222-2222-0000-0000-000000000001"),
                     Name = "CDB Banco A",
                     Type = AssetType.Cdb,
                     CurrentPrice = 1000.00m
                 },
-                 new Asset
-                 {
-                     Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
-                     Name = "Tesouro Selic 2025",
-                     Type = AssetType.TesouroDireto,
-                     CurrentPrice = 100.00m
-                 }
+                new Asset
+                {
+                    Id = Guid.Parse("22222222-2222-0000-0000-000000000002"),
+                    Name = "CDB Banco B",
+                    Type = AssetType.Cdb,
+                    CurrentPrice = 5000.00m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("22222222-2222-0000-0000-000000000003"),
+                    Name = "CDB Banco C",
+                    Type = AssetType.Cdb,
+                    CurrentPrice = 2000.00m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("33333333-3333-0000-0000-000000000001"),
+                    Name = "Tesouro Selic 2025",
+                    Type = AssetType.TesouroDireto,
+                    CurrentPrice = 100.00m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("33333333-3333-0000-0000-000000000002"),
+                    Name = "Tesouro IPCA+ 2026",
+                    Type = AssetType.TesouroDireto,
+                    CurrentPrice = 100.00m
+                },
+                new Asset
+                {
+                    Id = Guid.Parse("33333333-3333-0000-0000-000000000003"),
+                    Name = "Tesouro Prefixado 2027",
+                    Type = AssetType.TesouroDireto,
+                    CurrentPrice = 100.00m
+                }
             );
 
             base.OnModelCreating(modelBuilder);
