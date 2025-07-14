@@ -1,7 +1,38 @@
 import axios from 'axios'
 import { getToken } from '../utils/token'
 
-const API_URL = 'https://localhost:7253/api'
+// Configuração da API usando variáveis de ambiente
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '10000')
+
+// Configuração do axios
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: API_TIMEOUT,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+})
+
+// Interceptor para adicionar token de autenticação
+api.interceptors.request.use((config) => {
+    const token = getToken()
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+})
+
+// Interceptor para tratamento de erros
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (import.meta.env.VITE_ENABLE_LOGS === 'true') {
+            console.error('API Error:', error.response?.data || error.message)
+        }
+        return Promise.reject(error)
+    }
+)
 
 export interface Account {
     id: string
@@ -19,12 +50,7 @@ export interface Transaction {
 
 // Função para listar contas do usuário
 export async function getAccounts(): Promise<Account[]> {
-    const token = getToken()
-    const response = await axios.get(`${API_URL}/Account`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
+    const response = await api.get('/Account')
     return response.data
 }
 
@@ -41,51 +67,20 @@ export async function hasAccounts(): Promise<boolean> {
 
 // Função para buscar transações de uma conta
 export async function getTransactions(accountId: string): Promise<Transaction[]> {
-    const response = await axios.get(`${API_URL}/Account/${accountId}/transactions`, {
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    })
+    const response = await api.get(`/Account/${accountId}/transactions`)
     return response.data
 }
 
 export async function createAccount(type: number): Promise<void> {
-    const token = getToken()
-    await axios.post(
-        `${API_URL}/Account`,
-        { type },
-        {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    )
+    await api.post('/Account', { type })
 }
 
 export async function deposit(accountId: string, amount: number): Promise<void> {
-    await axios.post(
-        `${API_URL}/Account/${accountId}/deposit`,
-        amount,
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        }
-    )
+    await api.post(`/Account/${accountId}/deposit`, amount)
 }
 
 export async function withdraw(accountId: string, amount: number): Promise<void> {
-    await axios.post(
-        `${API_URL}/Account/${accountId}/withdraw`,
-        amount,
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        }
-    )
+    await api.post(`/Account/${accountId}/withdraw`, amount)
 }
 
 export interface TransferData {
@@ -95,16 +90,7 @@ export interface TransferData {
 }
 
 export async function transfer(data: TransferData): Promise<void> {
-    await axios.post(
-        `${API_URL}/Account/transfer`,
-        data,
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        }
-    )
+    await api.post('/Account/transfer', data)
 }
 
 export interface TransferByEmailData {
@@ -114,16 +100,7 @@ export interface TransferByEmailData {
 }
 
 export async function transferByEmail(data: TransferByEmailData): Promise<void> {
-    await axios.post(
-        `${API_URL}/Account/transfer-by-email`,
-        data,
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        }
-    )
+    await api.post('/Account/transfer-by-email', data)
 }
 
 export interface Asset {
@@ -134,44 +111,24 @@ export interface Asset {
 }
 
 export async function getAssets(): Promise<Asset[]> {
-    const response = await axios.get(`${API_URL}/Assets`, {
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    })
+    const response = await api.get('/Assets')
     return response.data
 }
 
 export async function buyAsset(accountId: string, assetId: string, quantity: number): Promise<void> {
-    await axios.post(
-        `${API_URL}/Investment/buy`,
-        {
-            accountId,
-            assetId,
-            quantity
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        }
-    )
+    await api.post('/Investment/buy', {
+        accountId,
+        assetId,
+        quantity
+    })
 }
 
 export async function sellAsset(accountId: string, assetId: string, quantity: number): Promise<void> {
-    await axios.post(
-        `${API_URL}/Investment/sell`,
-        {
-            accountId,
-            assetId,
-            quantity
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        }
-    )
+    await api.post('/Investment/sell', {
+        accountId,
+        assetId,
+        quantity
+    })
 }
 
 export interface PortfolioItem {
@@ -185,13 +142,13 @@ export interface PortfolioItem {
 }
 
 export async function getPortfolio(): Promise<PortfolioItem[]> {
-    console.log('Chamando API de portfólio...')
-    const response = await axios.get(`${API_URL}/Investment/portfolio`, {
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    })
-    console.log('Resposta da API de portfólio:', response.data)
+    if (import.meta.env.VITE_ENABLE_DEBUG === 'true') {
+        console.log('Chamando API de portfólio...')
+    }
+    const response = await api.get('/Investment/portfolio')
+    if (import.meta.env.VITE_ENABLE_DEBUG === 'true') {
+        console.log('Resposta da API de portfólio:', response.data)
+    }
     return response.data
 }
 
@@ -200,13 +157,7 @@ export interface InvestmentReport {
 }
 
 export async function getInvestmentReport(): Promise<InvestmentReport> {
-    console.log('Chamando API de relatório de investimentos...')
-    const response = await axios.get(`${API_URL}/Reports/investments`, {
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    })
-    console.log('Resposta da API de investimentos:', response.data)
+    const response = await api.get('/Investment/report')
     return response.data
 }
 
@@ -218,25 +169,16 @@ export interface TaxReport {
 }
 
 export async function getTaxReport(year?: number): Promise<TaxReport> {
-    const response = await axios.get(`${API_URL}/Reports/tax`, {
-        params: year ? { year } : {},
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    })
+    const currentYear = year || new Date().getFullYear()
+    const response = await api.get(`/Tax/report/${currentYear}`)
     return response.data
 }
 
 export async function getTransactionsReport(accountId: string, from?: string, to?: string): Promise<Transaction[]> {
-    const params: any = {}
-    if (from) params.from = from
-    if (to) params.to = to
+    const params = new URLSearchParams()
+    if (from) params.append('from', from)
+    if (to) params.append('to', to)
 
-    const response = await axios.get(`${API_URL}/Account/${accountId}/statement`, {
-        params,
-        headers: {
-            Authorization: `Bearer ${getToken()}`
-        }
-    })
+    const response = await api.get(`/Account/${accountId}/transactions-report?${params.toString()}`)
     return response.data
 } 
