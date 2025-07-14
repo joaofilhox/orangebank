@@ -153,6 +153,74 @@ export default function DashboardPage() {
                         </button>
                     </div>
                 </div>
+
+                <div className="card fade-in" style={{
+                    border: '3px solid var(--color-warning)',
+                    backgroundColor: 'var(--color-warning-light)',
+                    marginTop: 'var(--spacing-4)'
+                }}>
+                    <div className="card-header">
+                        <h2 className="card-title" style={{ color: 'var(--color-warning)' }}>
+                            ⚠️ ÁREA ADMINISTRATIVA - GERENCIAMENTO DE ATIVOS
+                        </h2>
+                    </div>
+                    <div style={{ padding: '1rem' }}>
+                        <p style={{
+                            marginBottom: '1.5rem',
+                            fontSize: '1.1rem',
+                            fontWeight: '500',
+                            color: 'var(--color-text)'
+                        }}>
+                            <strong>🎯 Função Administrativa:</strong> Gerenciar preços dos ativos e simular impacto na tributação das operações
+                        </p>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            gap: '1rem',
+                            flexWrap: 'wrap'
+                        }}>
+                            <button
+                                onClick={() => navigate('/assets-management')}
+                                className="btn"
+                                style={{
+                                    backgroundColor: 'var(--color-warning)',
+                                    color: 'white',
+                                    fontSize: '1.2rem',
+                                    padding: '1rem 2rem',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold',
+                                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)'
+                                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.3)'
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)'
+                                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)'
+                                }}
+                            >
+                                💰 GERENCIAR PREÇOS DOS ATIVOS
+                            </button>
+                        </div>
+                        <p style={{
+                            marginTop: '1rem',
+                            fontSize: '0.9rem',
+                            color: 'var(--color-text-secondary)',
+                            textAlign: 'center'
+                        }}>
+                            <strong>📋 Funcionalidades Administrativas:</strong><br />
+                            • Listar e gerenciar todos os ativos disponíveis<br />
+                            • Atualizar preços em tempo real<br />
+                            • Visualizar regras de tributação (15% ações, 22% renda fixa)<br />
+                            • Simular impacto das variações de preço nos impostos<br />
+                            • Testar cenários de mercado para planejamento tributário
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     )

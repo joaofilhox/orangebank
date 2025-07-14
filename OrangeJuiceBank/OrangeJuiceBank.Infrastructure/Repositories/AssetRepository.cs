@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OrangeJuiceBank.Domain;
 using OrangeJuiceBank.Domain.Repositories;
 using OrangeJuiceBank.Infrastructure.Data;
 
@@ -22,5 +23,11 @@ namespace OrangeJuiceBank.Infrastructure.Repositories
             return await _context.Assets.ToListAsync();
         }
 
+        public async Task<Asset> UpdateAsync(Asset asset)
+        {
+            _context.Assets.Update(asset);
+            await _context.SaveChangesAsync();
+            return asset;
+        }
     }
 }

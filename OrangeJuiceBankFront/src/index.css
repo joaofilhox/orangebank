@@ -12,6 +12,23 @@
   --primary-orange-light: #ff8a5c;
   --secondary-orange: #ff8c42;
 
+  /* Cores do tema */
+  --color-primary: var(--primary-orange);
+  --color-primary-light: var(--primary-orange-light);
+  --color-secondary: var(--secondary-orange);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-info: var(--info);
+  --color-info-light: #dbeafe;
+  --color-success-light: #d1fae5;
+  --color-text: var(--gray-800);
+  --color-text-secondary: var(--gray-600);
+  --color-background: var(--gray-50);
+  --color-background-secondary: var(--gray-100);
+  --color-border: var(--gray-200);
+
   /* Cores neutras */
   --white: #ffffff;
   --gray-50: #f9fafb;
@@ -29,6 +46,7 @@
   --success: #10b981;
   --error: #ef4444;
   --warning: #f59e0b;
+  --warning-light: #fef3c7;
   --info: #3b82f6;
 
   /* Tipografia */

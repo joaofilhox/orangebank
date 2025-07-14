@@ -32,5 +32,32 @@ namespace OrangeJuiceBank.API.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAssetRequest request)
+        {
+            var asset = await _assetRepository.GetByIdAsync(id);
+            
+            if (asset == null)
+            {
+                return NotFound($"Asset com ID {id} não encontrado.");
+            }
+
+            asset.Name = request.Name;
+            asset.Type = request.Type;
+            asset.CurrentPrice = request.CurrentPrice;
+
+            var updatedAsset = await _assetRepository.UpdateAsync(asset);
+
+            var response = new AssetResponse
+            {
+                Id = updatedAsset.Id,
+                Name = updatedAsset.Name,
+                Type = updatedAsset.Type,
+                CurrentPrice = updatedAsset.CurrentPrice
+            };
+
+            return Ok(response);
+        }
     }
 }
