@@ -71,6 +71,32 @@ A API usa **JWT Bearer Token**. Para acessar rotas protegidas:
 
 ### 💎 Ativos
 - `GET /api/assets` - Listar ativos disponíveis
+- `PUT /api/assets/{id}` - Atualizar ativo (nome, tipo e preço)
+
+#### 📝 Detalhes da Atualização de Ativos
+A rota `PUT /api/assets/{id}` permite atualizar:
+- **name**: Nome do ativo
+- **type**: Tipo do ativo (0=Ação, 1=CDB, 2=Tesouro Direto)
+- **currentPrice**: Preço atual do ativo
+
+**Exemplo de Request Body:**
+```json
+{
+  "name": "Petrobras PN",
+  "type": 0,
+  "currentPrice": 25.50
+}
+```
+
+**Resposta de Sucesso (200 OK):**
+```json
+{
+  "id": "guid-do-asset",
+  "name": "Petrobras PN",
+  "type": 0,
+  "currentPrice": 25.50
+}
+```
 
 ## 🧪 Testes
 
@@ -112,4 +138,10 @@ curl -X POST "https://localhost:7001/api/auth/login" \
 # 3. Usar token para acessar rotas protegidas
 curl -X GET "https://localhost:7001/api/account" \
   -H "Authorization: Bearer {token_aqui}"
+
+# 4. Atualizar ativo (exemplo)
+curl -X PUT "https://localhost:7001/api/assets/{asset_id}" \
+  -H "Authorization: Bearer {token_aqui}" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Petrobras PN","type":0,"currentPrice":25.50}'
 ``` 

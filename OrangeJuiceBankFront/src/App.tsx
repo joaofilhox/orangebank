@@ -8,6 +8,7 @@ import WithdrawPage from './pages/WithdrawPage'
 import TransferPage from './pages/TransferPage'
 import BuyAssetPage from './pages/BuyAssetPage'
 import ReportsPage from './pages/ReportsPage'
+import AssetsManagementPage from './pages/AssetsManagementPage'
 import ProtectedRoute from './routes/ProtectedRoute'
 import PublicOnlyRoute from './routes/PublicOnlyRoute'
 
@@ -134,6 +135,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assets-management"
+          element={
+            <ProtectedRoute>
+              <AssetsManagementPage />
             </ProtectedRoute>
           }
         />
