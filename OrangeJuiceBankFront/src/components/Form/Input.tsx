@@ -1,27 +1,26 @@
-import type { FieldError } from 'react-hook-form'
+import React from 'react'
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    label: string
-    error?: FieldError
+    label?: string
+    error?: any
 }
 
-export default function Input({ label, error, ...rest }: InputProps) {
+export default function Input({ label, error, ...props }: InputProps) {
     return (
-        <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '.25rem' }}>{label}</label>
+        <div className="form-group">
+            {label && (
+                <label className="form-label">
+                    {label}
+                </label>
+            )}
             <input
-                {...rest}
-                style={{
-                    width: '100%',
-                    padding: '.5rem',
-                    border: error ? '1px solid red' : '1px solid #ccc',
-                    borderRadius: '4px',
-                }}
+                className={`form-input ${error ? 'error' : ''}`}
+                {...props}
             />
             {error && (
-                <span style={{ color: 'red', fontSize: '.875rem' }}>
+                <div className="form-error">
                     {error.message}
-                </span>
+                </div>
             )}
         </div>
     )

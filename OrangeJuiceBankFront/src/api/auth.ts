@@ -1,6 +1,37 @@
 import axios from 'axios'
 
-const API_URL = 'https://localhost:7253/api'
+// Configuração da API usando variáveis de ambiente
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '10000')
+
+// Configuração do axios
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: API_TIMEOUT,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+})
+
+// Interceptor para adicionar token de autenticação
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem(import.meta.env.VITE_TOKEN_KEY || 'orange_juice_token')
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+})
+
+// Interceptor para tratamento de erros
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (import.meta.env.VITE_ENABLE_LOGS === 'true') {
+            console.error('API Error:', error.response?.data || error.message)
+        }
+        return Promise.reject(error)
+    }
+)
 
 export interface RegisterUserData {
     fullName: string
@@ -20,7 +51,7 @@ export interface LoginResponse {
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-    const response = await axios.post<LoginResponse>(`${API_URL}/Auth/login`, {
+    const response = await api.post<LoginResponse>('/Auth/login', {
         email,
         password,
     })
@@ -28,5 +59,5 @@ export async function login(email: string, password: string): Promise<LoginRespo
 }
 
 export async function registerUser(data: RegisterUserData): Promise<void> {
-    await axios.post(`${API_URL}/Auth/register`, data)
+    await api.post('/Auth/register', data)
 } 

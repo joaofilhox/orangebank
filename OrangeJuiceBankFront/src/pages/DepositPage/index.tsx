@@ -6,12 +6,14 @@ import { useEffect, useState } from 'react'
 import { getAccounts, deposit } from '../../api/account'
 import type { Account } from '../../api/account'
 import { useNavigate } from 'react-router-dom'
+import Input from '../../components/Form/Input'
 
 export default function DepositPage() {
     const navigate = useNavigate()
     const [currentAccount, setCurrentAccount] = useState<Account | null>(null)
     const [apiError, setApiError] = useState('')
     const [loading, setLoading] = useState(true)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const {
         register,
@@ -47,81 +49,121 @@ export default function DepositPage() {
 
     const onSubmit = async (data: DepositSchema) => {
         setApiError('')
+        setIsSubmitting(true)
+
         if (!currentAccount) {
             setApiError('Conta não encontrada.')
+            setIsSubmitting(false)
             return
         }
+
         try {
             await deposit(currentAccount.id, data.amount)
             navigate('/dashboard')
         } catch (err) {
             console.error(err)
             setApiError('Erro ao realizar depósito.')
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
-    if (loading) return <p>Carregando contas...</p>
+    if (loading) {
+        return (
+            <div className="page-container">
+                <div className="container">
+                    <div className="loading">
+                        Carregando contas...
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
-        <div style={{ maxWidth: '400px', margin: '0 auto', padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h1>Depositar</h1>
-                <button
-                    type="button"
-                    onClick={() => navigate('/dashboard')}
-                    style={{
-                        padding: '0.5rem 1rem',
-                        background: '#6c757d',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Voltar
-                </button>
-            </div>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                {currentAccount && (
-                    <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
-                        <p><strong>Conta Corrente:</strong> {currentAccount.id.substring(0, 8)}...</p>
-                        <p><strong>Saldo atual:</strong> R$ {currentAccount.balance.toFixed(2)}</p>
-                    </div>
-                )}
-
-                <div style={{ marginBottom: '1rem' }}>
-                    <label>Valor do Depósito</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Digite o valor"
-                        {...register('amount', { valueAsNumber: true })}
-                        style={{ width: '100%', padding: '0.5rem' }}
-                    />
-                    {errors.amount && (
-                        <span style={{ color: 'red' }}>{errors.amount.message}</span>
-                    )}
+        <div className="page-container">
+            <div className="container">
+                <div className="page-header fade-in">
+                    <h1 className="page-title text-primary">💰 Depositar</h1>
+                    <p className="page-subtitle">Adicione dinheiro à sua conta</p>
                 </div>
 
-                {apiError && (
-                    <div style={{ color: 'red', marginBottom: '1rem' }}>{apiError}</div>
-                )}
+                <div className="card fade-in" style={{ maxWidth: '500px', margin: '0 auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-6)' }}>
+                        <h2>Depósito</h2>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/dashboard')}
+                            className="btn btn-secondary btn-sm"
+                        >
+                            ← Voltar
+                        </button>
+                    </div>
 
-                <button
-                    type="submit"
-                    style={{
-                        width: '100%',
-                        padding: '.75rem',
-                        background: '#28a745',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Confirmar Depósito
-                </button>
-            </form>
+                    {currentAccount && (
+                        <div className="card mb-6" style={{
+                            background: 'linear-gradient(135deg, var(--success) 0%, #059669 100%)',
+                            color: 'var(--white)',
+                            border: 'none'
+                        }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{
+                                    fontSize: 'var(--font-size-sm)',
+                                    opacity: 0.9,
+                                    marginBottom: 'var(--spacing-2)'
+                                }}>
+                                    Conta Corrente
+                                </div>
+                                <div style={{
+                                    fontSize: 'var(--font-size-lg)',
+                                    fontWeight: '600',
+                                    marginBottom: 'var(--spacing-2)'
+                                }}>
+                                    {currentAccount.id.substring(0, 8)}...
+                                </div>
+                                <div style={{
+                                    fontSize: 'var(--font-size-2xl)',
+                                    fontWeight: '700'
+                                }}>
+                                    R$ {currentAccount.balance.toFixed(2)}
+                                </div>
+                                <div style={{
+                                    fontSize: 'var(--font-size-sm)',
+                                    opacity: 0.9,
+                                    marginTop: 'var(--spacing-2)'
+                                }}>
+                                    Saldo atual
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <Input
+                            label="Valor do Depósito"
+                            type="number"
+                            step="0.01"
+                            placeholder="Digite o valor"
+                            {...register('amount', { valueAsNumber: true })}
+                            error={errors.amount}
+                        />
+
+                        {apiError && (
+                            <div className="form-error text-center mb-4">
+                                {apiError}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="btn btn-success btn-full"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Processando...' : 'Confirmar Depósito'}
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     )
 } 

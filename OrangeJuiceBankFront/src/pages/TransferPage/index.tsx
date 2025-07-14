@@ -6,12 +6,14 @@ import { useEffect, useState } from 'react'
 import { getAccounts, transfer, transferByEmail } from '../../api/account'
 import type { Account } from '../../api/account'
 import { useNavigate } from 'react-router-dom'
+import Input from '../../components/Form/Input'
 
 export default function TransferPage() {
     const navigate = useNavigate()
     const [accounts, setAccounts] = useState<Account[]>([])
     const [apiError, setApiError] = useState('')
     const [loading, setLoading] = useState(true)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const {
         register,
@@ -27,7 +29,6 @@ export default function TransferPage() {
     })
 
     const transferType = watch('transferType')
-    const sourceAccountId = watch('sourceAccountId')
 
     useEffect(() => {
         const fetchAccounts = async () => {
@@ -46,26 +47,31 @@ export default function TransferPage() {
 
     const onSubmit = async (data: TransferSchema) => {
         setApiError('')
+        setIsSubmitting(true)
 
         const source = accounts.find(a => a.id === data.sourceAccountId)
         if (!source) {
             setApiError('Conta de origem inválida.')
+            setIsSubmitting(false)
             return
         }
 
         const amount = parseFloat(data.amount)
         if (isNaN(amount) || amount <= 0) {
             setApiError('Digite um valor válido maior que zero.')
+            setIsSubmitting(false)
             return
         }
 
         if (source.type === 2 && data.transferType === 'external') {
             setApiError('Não é permitido transferir de Conta Investimento para outro usuário.')
+            setIsSubmitting(false)
             return
         }
 
         if (amount > source.balance) {
             setApiError('O valor não pode exceder o saldo da conta de origem.')
+            setIsSubmitting(false)
             return
         }
 
@@ -76,14 +82,9 @@ export default function TransferPage() {
 
             if (!dest) {
                 setApiError('Conta destino não encontrada.')
+                setIsSubmitting(false)
                 return
             }
-
-            // ⚠️ Aqui você pode validar se a conta investimento tem operações pendentes (placeholder)
-            // if (source.type === 2 /* && source.hasPendingOperations*/) {
-            //     setApiError('Não é permitido transferir da Conta Investimento com operações pendentes.')
-            //     return
-            // }
 
             try {
                 await transfer({
@@ -95,12 +96,15 @@ export default function TransferPage() {
             } catch (err) {
                 console.error(err)
                 setApiError('Erro ao realizar transferência.')
+            } finally {
+                setIsSubmitting(false)
             }
 
         } else {
             // Transferência para outro usuário
             if (!data.destinationAccountId) {
                 setApiError('Informe o e-mail do destinatário.')
+                setIsSubmitting(false)
                 return
             }
 
@@ -114,106 +118,106 @@ export default function TransferPage() {
             } catch (err) {
                 console.error(err)
                 setApiError('Erro ao realizar transferência.')
+            } finally {
+                setIsSubmitting(false)
             }
         }
     }
 
-    if (loading) return <p>Carregando contas...</p>
+    if (loading) {
+        return (
+            <div className="page-container">
+                <div className="container">
+                    <div className="loading">
+                        Carregando contas...
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
-        <div style={{ maxWidth: '500px', margin: '0 auto', padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h1>Transferir</h1>
-                <button
-                    type="button"
-                    onClick={() => navigate('/dashboard')}
-                    style={{
-                        padding: '0.5rem 1rem',
-                        background: '#6c757d',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Voltar
-                </button>
-            </div>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <div style={{ marginBottom: '1rem' }}>
-                    <label>Tipo de Transferência</label>
-                    <select {...register('transferType')} style={{ width: '100%', padding: '0.5rem' }}>
-                        <option value="self">Entre minhas contas</option>
-                        <option value="external">Para outro usuário</option>
-                    </select>
-                    {errors.transferType && (
-                        <span style={{ color: 'red' }}>{errors.transferType.message}</span>
-                    )}
+        <div className="page-container">
+            <div className="container">
+                <div className="page-header fade-in">
+                    <h1 className="page-title text-primary">🔄 Transferir</h1>
+                    <p className="page-subtitle">Transfira dinheiro entre contas</p>
                 </div>
 
-                <div style={{ marginBottom: '1rem' }}>
-                    <label>Conta de Origem</label>
-                    <select {...register('sourceAccountId')} style={{ width: '100%', padding: '0.5rem' }}>
-                        <option value="">Selecione uma conta</option>
-                        {accounts.map(acc => (
-                            <option key={acc.id} value={acc.id}>
-                                {acc.type === 1 ? 'Corrente' : 'Investimento'} - Saldo: R$ {acc.balance.toFixed(2)}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.sourceAccountId && (
-                        <span style={{ color: 'red' }}>{errors.sourceAccountId.message}</span>
-                    )}
-                </div>
-
-                {transferType === 'external' && (
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label>Número da Conta Destino</label>
-                        <input
-                            type="text"
-                            placeholder="Digite o número da conta destino"
-                            {...register('destinationAccountId')}
-                            style={{ width: '100%', padding: '0.5rem' }}
-                        />
-                        {errors.destinationAccountId && (
-                            <span style={{ color: 'red' }}>{errors.destinationAccountId.message}</span>
-                        )}
+                <div className="card fade-in" style={{ maxWidth: '500px', margin: '0 auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-6)' }}>
+                        <h2>Transferência</h2>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/dashboard')}
+                            className="btn btn-secondary btn-sm"
+                        >
+                            ← Voltar
+                        </button>
                     </div>
-                )}
 
-                <div style={{ marginBottom: '1rem' }}>
-                    <label>Valor</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Digite o valor"
-                        {...register('amount')}
-                        style={{ width: '100%', padding: '0.5rem' }}
-                    />
-                    {errors.amount && (
-                        <span style={{ color: 'red' }}>{errors.amount.message}</span>
-                    )}
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <div className="form-group">
+                            <label className="form-label">Tipo de Transferência</label>
+                            <select {...register('transferType')} className="form-select">
+                                <option value="self">Entre minhas contas</option>
+                                <option value="external">Para outro usuário</option>
+                            </select>
+                            {errors.transferType && (
+                                <div className="form-error">{errors.transferType.message}</div>
+                            )}
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Conta de Origem</label>
+                            <select {...register('sourceAccountId')} className="form-select">
+                                <option value="">Selecione uma conta</option>
+                                {accounts.map(acc => (
+                                    <option key={acc.id} value={acc.id}>
+                                        {acc.type === 1 ? 'Corrente' : 'Investimento'} - Saldo: R$ {acc.balance.toFixed(2)}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.sourceAccountId && (
+                                <div className="form-error">{errors.sourceAccountId.message}</div>
+                            )}
+                        </div>
+
+                        {transferType === 'external' && (
+                            <Input
+                                label="E-mail do Destinatário"
+                                type="email"
+                                placeholder="Digite o e-mail do destinatário"
+                                {...register('destinationAccountId')}
+                                error={errors.destinationAccountId}
+                            />
+                        )}
+
+                        <Input
+                            label="Valor"
+                            type="number"
+                            step="0.01"
+                            placeholder="Digite o valor"
+                            {...register('amount')}
+                            error={errors.amount}
+                        />
+
+                        {apiError && (
+                            <div className="form-error text-center mb-4">
+                                {apiError}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary btn-full"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Processando...' : 'Confirmar Transferência'}
+                        </button>
+                    </form>
                 </div>
-
-                {apiError && (
-                    <div style={{ color: 'red', marginBottom: '1rem' }}>{apiError}</div>
-                )}
-
-                <button
-                    type="submit"
-                    style={{
-                        width: '100%',
-                        padding: '.75rem',
-                        background: '#ffc107',
-                        color: '#000',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Confirmar Transferência
-                </button>
-            </form>
+            </div>
         </div>
     )
 } 

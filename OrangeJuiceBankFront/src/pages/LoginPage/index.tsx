@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from './schema'
@@ -14,6 +14,7 @@ export default function LoginPage() {
     const location = useLocation()
     const [apiError, setApiError] = useState('')
     const [successMessage, setSuccessMessage] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
 
     // Verificar se há mensagem de sucesso do registro
     useEffect(() => {
@@ -23,6 +24,7 @@ export default function LoginPage() {
             navigate(location.pathname, { replace: true })
         }
     }, [location.state, navigate, location.pathname])
+
     const {
         register,
         handleSubmit,
@@ -33,6 +35,8 @@ export default function LoginPage() {
 
     const onSubmit = async (data: LoginSchema) => {
         setApiError('')
+        setIsLoading(true)
+
         try {
             const response = await login(data.email, data.password)
             saveToken(response.token)
@@ -59,48 +63,68 @@ export default function LoginPage() {
         } catch (err) {
             console.error('Erro no login:', err)
             setApiError('Login inválido. Verifique seus dados.')
+        } finally {
+            setIsLoading(false)
         }
     }
 
     return (
-        <div style={{ maxWidth: '400px', margin: '0 auto', padding: '2rem' }}>
-            <h1>Login</h1>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <Input
-                    label="Email"
-                    {...register('email')}
-                    error={errors.email}
-                />
-                <Input
-                    label="Senha"
-                    type="password"
-                    {...register('password')}
-                    error={errors.password}
-                />
-                {successMessage && (
-                    <div style={{ color: 'green', marginBottom: '1rem', textAlign: 'center' }}>{successMessage}</div>
-                )}
-                {apiError && (
-                    <div style={{ color: 'red', marginBottom: '1rem' }}>{apiError}</div>
-                )}
-                <button
-                    type="submit"
-                    style={{
-                        width: '100%',
-                        padding: '.75rem',
-                        background: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                    }}
-                >
-                    Entrar
-                </button>
-            </form>
-            <p style={{ marginTop: '1rem', textAlign: 'center' }}>
-                Não tem conta? <a href="/register">Criar conta</a>
-            </p>
+        <div className="page-container">
+            <div className="container">
+                <div className="page-header fade-in">
+                    <h1 className="page-title text-primary">🍊 Orange Juice Bank</h1>
+                    <p className="page-subtitle">Faça login para acessar sua conta</p>
+                </div>
+
+                <div className="card fade-in" style={{ maxWidth: '400px', margin: '0 auto' }}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <Input
+                            label="Email"
+                            type="email"
+                            placeholder="Digite seu email"
+                            {...register('email')}
+                            error={errors.email}
+                        />
+
+                        <Input
+                            label="Senha"
+                            type="password"
+                            placeholder="Digite sua senha"
+                            {...register('password')}
+                            error={errors.password}
+                        />
+
+                        {successMessage && (
+                            <div className="form-success text-center mb-4">
+                                {successMessage}
+                            </div>
+                        )}
+
+                        {apiError && (
+                            <div className="form-error text-center mb-4">
+                                {apiError}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary btn-full"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Entrando...' : 'Entrar'}
+                        </button>
+                    </form>
+
+                    <div className="text-center mt-6">
+                        <p className="text-muted">
+                            Não tem conta?{' '}
+                            <a href="/register" className="text-primary">
+                                Criar conta
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
     )
 } 
